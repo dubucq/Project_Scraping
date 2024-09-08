@@ -1,96 +1,143 @@
+import sys
 import requests
+import csv
+
 from bs4 import BeautifulSoup
+from typing import List
+from loguru import logger
+import requests.exceptions
+from selectolax.parser import HTMLParser
 
 
-url = 'https://books.toscrape.com/catalogue/page-'
 
+logger.remove()
+logger.add(f'books.log',
+           level="WARNING",
+           rotation="500kb")
 
-"""Verifier que le site est accessible arg : url(string) """
+logger.add(sys.stderr, level="INFO")
 
-def verifSite(url):
-    try:
-        reponse = requests.get(url)
-        return True
-    except:
-        print("site bloqué")
+def get_all_books_urls(url: str) -> List[str]:
+    """__Recupere toutes les urls des livres à partir d'une URL__
 
+    Args:
+        url (str): _URL de départ_
+    Returns:
+        List[str]: _Liste de toutes les URLs de toutes les pages_
+    """
+    pass
 
-def get_urls(url):
-    links = []
+def get_next_page_url(tree: HTMLParser) -> str:
+    """_Recupere l'URLs de la page suivante_
+
+    Args:
+        tree (HTMLParser): _Objet HTMLParser de la page_
+
+    Returns:
+        str: _URL de la page suivante_
+    """
+    pass
+
+def get_all_books_urls_on_page(tree: HTMLParser) -> List[str]:
+    """_Recupere toutes les URLs des livres present sur une page_
+
+    Args:
+        tree (HTMLParser): _Objet HTMLParser de la page_
+
+    Returns:
+        List[str]: _Liste de tous les URLs de tous les livres sur la page_
+    """
     
-    for i in range(1, 51):
+    pass
 
-        print(url + str(i) +'.html')
-        reponse = requests.get(url + str(i) +'.html')
+def get_book_informations(url: str) -> List[str]:
+    """Recupere toutes les informations d'un livre grace à une URL
 
-        if reponse.ok:
+    Args:
+        url (str): _URL du livre_
 
-            soup = BeautifulSoup(reponse.text, 'html.parser')
-            livres = soup.findAll('article')
+    Returns:
+        List[str]: _Liste des informations du livre_
+    """
+    
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        tree = HTMLParser(response.text)
+        name = extract_book_name_from_page(tree=tree)
+        price = extract_book_price_from_page(tree=tree)
+        availability = extract_book_availability_from_page(tree=tree)
+        stars = extract_book_stars_number_from_page(tree=tree)
+        image = extract_book_image_from_page(tree=tree)
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Erreur lors de la requête HTTPS : {e}")
+    
+    
 
-        for article in livres:
+def extract_book_name_from_page(tree: HTMLParser) -> str:
+    """Extrait de la page le nom du livre 
 
-            a = article.find('a')
-            link = a['href']
-            links.append('https://books.toscrape.com/catalogue/' + link)   
+    Args:
+        tree (HTMLParser): _Objet HTMLParser de la page_
+        
+    Returns:
+        str: _nom du livre_
+    """
+    pass
+    
+def extract_book_price_from_page(tree: HTMLParser) -> float:
+    """Extrait de la page le prix du livre 
 
-    return links
+    Args:
+        tree (HTMLParser): _Objet HTMLParser de la page_
+        
+    Returns:
+        float: _prix du livre_
+    """
+    pass
+    
+def extract_book_availability_from_page(tree: HTMLParser) -> int:
+    """Extrait de la page le nombre restant de livre 
 
-def writeTxt(liste):
+    Args:
+        tree (HTMLParser): _Objet HTMLParser de la page_
+        
+    Returns:
+        int: _nombre de livre restant_
+    """
+    pass
+    
+def extract_book_stars_number_from_page(tree: HTMLParser) -> int:
+    """Extrait de la page le nombre d'etoiles du livre 
 
-    with open('urls.txt', 'w') as file:  
+    Args:
+        tree (HTMLParser): _Objet HTMLParser de la page_
+        
+    Returns:
+        int: _nombre d'etoile du livre_
+    """
+    pass
+    
+def extract_book_image_from_page(tree: HTMLParser) -> str:
+    """Extrait de la page l'URL de l'image du livre 
 
-        for i in range (len(liste)):
+    Args:
+        tree (HTMLParser): _Objet HTMLParser de la page_
+        
+    Returns:
+        str: _URL de l'image du livre_
+    """
+    pass
 
-            file.write(liste[i] + '\n')
+def main():
+    base_URL = "https://books.toscrape.com/index.html"
+    all_books_urls = get_all_books_urls(base_URL)
+    for book_url in all_books_urls:
+        get_book_informations(url=book_url)
+    
+    pass
 
-def get_book_information(fichierText):
-    file = fichierText
-    with open('urls.txt', 'r') as file:  
-
-        for row in file:
-            url = row.strip()
-            reponse = requests.get(url) 
-
-            if reponse.ok:
-                soup = BeautifulSoup(reponse.text, 'html.parser')
-                nomLivre = soup.find('h1')
-                prix = soup.find('p', class_="price_color")
-
-                print(nomLivre.text + ' au prix de : ' + prix.text)
-            else:
-                print("erreur")
-
-
-
-
-
-get_book_information("url.txt")
-
-
-
-"""liste = []
-liste = get_urls(url)
-writeTxt(liste)
-"""
-print('finish')
-
-"""links = []
-
-for i in range(51):
-
-    url = 'https://books.toscrape.com/catalogue/page-'+str(i)+'.html'
-    reponse = requests.get(url)
-
-    if reponse.ok:
-        soup = BeautifulSoup(reponse.text, 'html.parser')
-        livres = soup.findAll('article')
-            
-        for article in livres:
-            a = article.find('a')
-            link = a['href']
-            links.append('https://books.toscrape.com/' + link)
-            
-   
-
-print(len(links))"""
+if __name__ == '__main__':
+    url = "https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html"
+    get_book_informations(url=url)

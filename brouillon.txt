@@ -1,0 +1,8 @@
+BROUILLON 
+
+
+regarder bibliothque logger + selectolax
+
+Fonction qui recupere les urls de tous les livres de la bibliothque
+function pour recuperer l'url de la page suivante 
+Fonction pour recuperer les informations d'un livre a partir d'une URL
